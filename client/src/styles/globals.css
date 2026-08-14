@@ -1,0 +1,185 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-primary: #050816;
+    --color-primary-secondary: #0F172A;
+    --color-accent-blue: #2563EB;
+    --color-accent-sky: #38BDF8;
+    --color-accent-cyan: #00F5FF;
+    --color-accent-green: #22C55E;
+    --color-text-light: #F8FAFC;
+    --color-text-muted: #94A3B8;
+  }
+
+  * {
+    @apply border-white/10;
+  }
+
+  html {
+    @apply scroll-smooth;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-primary text-text-light min-h-screen;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  }
+
+  ::selection {
+    @apply bg-accent-cyan/30 text-text-light;
+  }
+
+  ::-webkit-scrollbar {
+    @apply w-2;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-primary;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-accent-blue/50 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-accent-blue/70;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  .container-custom {
+    @apply mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl;
+  }
+
+  .section {
+    @apply py-20 lg:py-32;
+  }
+
+  .section-title {
+    @apply text-3xl sm:text-4xl lg:text-5xl font-bold font-display tracking-tight;
+  }
+
+  .section-subtitle {
+    @apply text-lg sm:text-xl text-text-muted mt-4 max-w-2xl;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-primary disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-primary {
+    @apply btn bg-gradient-primary text-white hover:shadow-glow-blue hover:-translate-y-0.5;
+  }
+
+  .btn-secondary {
+    @apply btn bg-white/5 text-text-light border border-white/10 hover:bg-white/10 hover:border-white/20 hover:-translate-y-0.5;
+  }
+
+  .btn-outline {
+    @apply btn bg-transparent border-2 border-accent-blue text-accent-blue hover:bg-accent-blue/10 hover:-translate-y-0.5;
+  }
+
+  .btn-ghost {
+    @apply btn bg-transparent text-text-muted hover:text-text-light hover:bg-white/5;
+  }
+
+  .card {
+    @apply bg-primary-secondary/50 backdrop-blur-xl border border-white/10 rounded-2xl p-6 lg:p-8 transition-all duration-500 hover:border-accent-blue/30 hover:shadow-glass-hover;
+  }
+
+  .card-glass {
+    @apply bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl transition-all duration-500 hover:border-accent-blue/30 hover:shadow-glass-hover hover:-translate-y-1;
+  }
+
+  .input-field {
+    @apply w-full px-4 py-3 bg-primary-secondary/50 border border-white/10 rounded-xl text-text-light placeholder:text-text-muted/50 focus:outline-none focus:border-accent-blue/50 focus:ring-2 focus:ring-accent-blue/20 transition-all duration-300;
+  }
+
+  .label {
+    @apply block text-sm font-medium text-text-light mb-2;
+  }
+
+  .badge {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-medium;
+  }
+
+  .badge-learning {
+    @apply badge bg-accent-sky/20 text-accent-sky border border-accent-sky/30;
+  }
+
+  .badge-intermediate {
+    @apply badge bg-accent-blue/20 text-accent-blue border border-accent-blue/30;
+  }
+
+  .badge-beginner {
+    @apply badge bg-accent-green/20 text-accent-green border border-accent-green/30;
+  }
+
+  .gradient-text {
+    @apply bg-gradient-primary bg-clip-text text-transparent;
+  }
+
+  .gradient-border {
+    @apply relative before:absolute before:inset-0 before:rounded-[inherit] before:bg-gradient-primary before:p-[1px] before:-z-10;
+  }
+
+  .glass-nav {
+    @apply fixed top-0 left-0 right-0 z-50 bg-primary/80 backdrop-blur-2xl border-b border-white/10 transition-all duration-300;
+  }
+
+  .nav-link {
+    @apply relative px-3 py-2 text-sm font-medium text-text-muted transition-colors duration-300 hover:text-text-light after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-gradient-primary after:transition-all after:duration-300 hover:after:w-full;
+  }
+
+  .nav-link-active {
+    @apply text-text-light after:w-full;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .animate-delay-100 {
+    animation-delay: 100ms;
+  }
+
+  .animate-delay-200 {
+    animation-delay: 200ms;
+  }
+
+  .animate-delay-300 {
+    animation-delay: 300ms;
+  }
+
+  .animate-delay-400 {
+    animation-delay: 400ms;
+  }
+
+  .animate-delay-500 {
+    animation-delay: 500ms;
+  }
+
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+
+  .transform-style-3d {
+    transform-style: preserve-3d;
+  }
+}
