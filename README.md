@@ -70,11 +70,40 @@ Bijay_portfolio/
 
 ### Prerequisites
 
+**Option 1: Local Development**
 - Node.js (v16 or higher)
 - npm or yarn package manager
 - MongoDB (local or cloud instance)
 
-### Installation
+**Option 2: Docker (Recommended)**
+- Docker (v20.10+)
+- Docker Compose (v2.0+)
+
+### Quick Start with Docker 🐳
+
+The easiest way to run the entire application:
+
+```bash
+git clone <repository-url>
+cd Bijay_portfolio
+
+# Setup environment
+cp server/.env.example server/.env
+
+# Start the application
+docker-compose up --build
+```
+
+Access at:
+- Frontend: http://localhost:3000
+- Backend: http://localhost:5000
+
+For more Docker options, see [DOCKER.md](./DOCKER.md) or use the helper script:
+```bash
+./docker-manage.sh help
+```
+
+### Local Installation
 
 1. **Clone the repository**
    ```bash
@@ -96,6 +125,15 @@ Bijay_portfolio/
 
 ### Configuration
 
+#### For Docker Users
+1. **Copy environment template**
+   ```bash
+   cp server/.env.example server/.env
+   ```
+2. **Edit server/.env** with your settings (SMTP, database URL, etc.)
+3. **Start with Docker**: `docker-compose up --build`
+
+#### For Local Development
 1. **Server Configuration**
    - Create a `.env` file in the `server` directory:
    ```env
@@ -103,6 +141,8 @@ Bijay_portfolio/
    PORT=5000
    EMAIL_USER=your_email@gmail.com
    EMAIL_PASS=your_email_password
+   NODE_ENV=development
+   CLIENT_URL=http://localhost:5173
    ```
 
 2. **Client Configuration** (if needed)
@@ -110,7 +150,36 @@ Bijay_portfolio/
 
 ## 📦 Running the Application
 
-### Development Mode
+### Using Docker (Recommended) 🐳
+
+**Start Everything**
+```bash
+docker-compose up --build
+```
+
+**Common Commands**
+```bash
+# Start in background
+docker-compose up -d
+
+# Stop containers
+docker-compose down
+
+# View logs
+docker-compose logs -f
+
+# Restart services
+docker-compose restart
+
+# Use the management script
+./docker-manage.sh up
+./docker-manage.sh logs server
+./docker-manage.sh shell client
+```
+
+See [DOCKER.md](./DOCKER.md) for complete Docker documentation.
+
+### Local Development Mode
 
 **Terminal 1 - Start Backend Server**
 ```bash
@@ -142,7 +211,38 @@ npm run build
 npm start
 ```
 
-## 📝 Available Scripts
+## � Docker Deployment
+
+This project includes complete Docker configuration for containerized deployment:
+
+### Features
+- ✅ Multi-stage builds for optimized images
+- ✅ Nginx reverse proxy for frontend
+- ✅ Node.js optimized backend container
+- ✅ Docker Compose orchestration
+- ✅ Health checks configured
+- ✅ Security hardening (non-root user, security headers)
+- ✅ Performance optimizations (Gzip, caching)
+
+### Files
+- `docker-compose.yml` - Service orchestration
+- `server/Dockerfile` - Backend container
+- `client/Dockerfile` - Frontend container
+- `client/nginx.conf` - Web server configuration
+- `docker-manage.sh` - Helper script
+- `DOCKER.md` - Detailed documentation
+
+### Quick Commands
+```bash
+./docker-manage.sh up        # Start
+./docker-manage.sh down      # Stop
+./docker-manage.sh logs      # View logs
+./docker-manage.sh rebuild   # Full rebuild
+```
+
+👉 See [DOCKER.md](./DOCKER.md) for complete Docker documentation.
+
+## �📝 Available Scripts
 
 ### Client Scripts
 - `npm run dev` - Start development server
@@ -225,4 +325,5 @@ For questions or inquiries, please reach out through the contact form on the por
 
 ---
 
-**Last Updated**: 2026-08-14
+**Last Updated**: 2026-08-15
+**Docker Support**: Added ✅
