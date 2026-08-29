@@ -67,6 +67,7 @@
 
   .section {
     @apply py-20 lg:py-32;
+    scroll-margin-top: 100px;
   }
 
   .section-title {

@@ -68,16 +68,28 @@ export function Hero() {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, ease: "easeOut", delay: 0.1 }}
-              className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold font-display tracking-tight leading-tight mb-6"
+              className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold font-display tracking-tight leading-tight mb-4"
             >
               Hi, I'm <span className="gradient-text">Bijay Chand.</span>
             </motion.h1>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
+              className="mb-6"
+            >
+              <div className="inline-flex items-center gap-2 rounded-full border border-accent-blue/30 bg-accent-blue/10 px-4 py-2 text-sm font-medium text-accent-blue shadow-glow-blue/20">
+                <Sparkles className="w-4 h-4" />
+                Currently Learning: AWS Solutions Architect | Kubernetes | Terraform
+              </div>
+            </motion.div>
 
             {/* Sub Heading */}
             <motion.p
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
+              transition={{ duration: 0.8, ease: "easeOut", delay: 0.25 }}
               className="text-xl sm:text-2xl lg:text-3xl font-medium text-text-muted mb-8 max-w-xl"
             >
               Building the Future with Cloud, Code & Security.
@@ -135,7 +147,7 @@ export function Hero() {
                 size="lg"
                 asChild
               >
-                <a href="/Bijay_Chand_Resume.pdf" download="Bijay_Chand_Resume.pdf">
+                <a href={personalInfo.resumeUrl} download="Bijay_Chand_Resume.pdf">
                   <Download className="w-5 h-5" />
                   Download Resume
                 </a>

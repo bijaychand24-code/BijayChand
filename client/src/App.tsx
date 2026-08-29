@@ -1,4 +1,3 @@
-import { Routes, Route, useLocation } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import { Toaster } from "react-hot-toast";
 import { Navbar } from "@/components/layout/Navbar";
@@ -16,8 +15,6 @@ import { ScrollProgress } from "@/components/ui/ScrollProgress";
 import { BackToTop } from "@/components/ui/BackToTop";
 
 function App() {
-  const location = useLocation();
-
   return (
     <div className="relative min-h-screen bg-primary text-text-light">
       {/* Scroll Progress */}
@@ -29,24 +26,17 @@ function App() {
       {/* Main Content */}
       <main id="main-content" className="pt-16">
         <AnimatePresence mode="wait">
-          <Routes location={location} key={location.pathname}>
-            <Route
-              path="/"
-              element={
-                <>
-                  <Hero />
-                  <About />
-                  <Skills />
-                  <Projects />
-                  <ExperienceSection />
-                  <EducationSection />
-                  <Certifications />
-                  <Services />
-                  <Contact />
-                </>
-              }
-            />
-          </Routes>
+          <>
+            <Hero />
+            <About />
+            <Skills />
+            <Projects />
+            <ExperienceSection />
+            <EducationSection />
+            <Certifications />
+            <Services />
+            <Contact />
+          </>
         </AnimatePresence>
       </main>
 

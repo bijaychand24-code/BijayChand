@@ -1,8 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Award, ExternalLink, Clock, CheckCircle, Loader2, Calendar } from "lucide-react";
-import { certifications } from "@/data/portfolio";
+import { Award, ExternalLink, Clock, CheckCircle, Loader2, Calendar, ArrowRight } from "lucide-react";
+import { awsJourneyPosts, certifications } from "@/data/portfolio";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -25,113 +25,118 @@ export function Certifications() {
     >
       <div className="container-custom">
         <SectionHeading
-          title="Certifications & Learning"
-          subtitle="Certificates and credentials that demonstrate my commitment to continuous learning and professional growth."
+          title="Certifications & Roadmap"
+          subtitle="Certificates, active learning goals, and the cloud certifications I’m pursuing to advance my engineering path."
           align="center"
         />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 mt-12 lg:mt-16">
-          {certifications.map((cert, index) => (
-            <motion.article
-              key={cert.id}
-              initial={{ opacity: 0, y: 30, scale: 0.95 }}
-              whileInView={{ opacity: 1, y: 0, scale: 1 }}
-              viewport={{ once: true, margin: "-100px" }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="group"
-            >
-              <Card variant="glass" className="p-6 lg:p-8 h-full flex flex-col group-hover:border-accent-blue/40 group-hover:shadow-glow-blue relative overflow-hidden">
-                {/* Status Badge */}
-                <div className="absolute top-4 right-4">
-                  <CertificationStatusBadge status={cert.status} />
-                </div>
-
-                {/* Icon */}
-                <div className="p-3 rounded-2xl bg-accent-blue/10 w-fit mb-5 group-hover:bg-accent-blue/20 transition-colors">
-                  <Award className="w-7 h-7 text-accent-blue" />
-                </div>
-
-                {/* Content */}
-                <div className="flex-1">
-                  <h3 className="text-lg lg:text-xl font-bold font-display text-text-light mb-2 group-hover:text-accent-blue transition-colors">
-                    {cert.name}
-                  </h3>
-                  <p className="text-text-muted text-sm mb-4 flex-1">
-                    {cert.issuer}
-                  </p>
-
-                  {/* Meta Info */}
-                  <div className="space-y-2 mb-5">
-                    <div className="flex items-center gap-2 text-text-muted text-sm">
-                      <Calendar className="w-4 h-4 flex-shrink-0" />
-                      <span>{cert.date}</span>
-                    </div>
-                    {cert.credentialId && (
-                      <div className="flex items-center gap-2 text-text-muted text-sm">
-                        <Award className="w-4 h-4 flex-shrink-0" />
-                        <span className="font-mono text-xs">{cert.credentialId}</span>
+        <div className="relative mt-12 lg:mt-16">
+          <div className="absolute left-5 top-0 h-full w-px bg-gradient-to-b from-accent-blue/70 via-accent-cyan/60 to-transparent md:left-1/2" />
+          <div className="space-y-8">
+            {certifications.map((cert, index) => (
+              <motion.article
+                key={cert.id}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-100px" }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                className="relative"
+              >
+                <div className="grid gap-6 md:grid-cols-2 md:items-center">
+                  <div className={cn(index % 2 === 0 ? "md:pr-12 md:text-right" : "md:col-start-2 md:pl-12")}>
+                    <Card variant="glass" className="p-6">
+                      <div className={cn("mb-4 flex items-center gap-3", index % 2 === 0 ? "md:justify-end" : "") }>
+                        <CertificationStatusBadge status={cert.status} />
                       </div>
-                    )}
+                      <h3 className="text-xl font-bold font-display text-text-light">{cert.name}</h3>
+                      <p className="mt-2 text-sm text-text-muted">{cert.issuer}</p>
+                      <div className={cn("mt-4 flex items-center gap-2 text-sm text-text-muted", index % 2 === 0 ? "md:justify-end" : "") }>
+                        <Calendar className="h-4 w-4" />
+                        <span>{cert.date}</span>
+                      </div>
+                    </Card>
                   </div>
 
-                  {/* Action */}
-                  <Button
-                    variant={cert.link !== "#" ? "outline" : "ghost"}
-                    size="sm"
-                    className="w-full"
-                    disabled={cert.link === "#"}
-                    asChild
-                  >
-                    <a
-                      href={cert.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={cn("flex items-center justify-center gap-2", cert.link === "#" && "pointer-events-none")}
-                    >
-                      {cert.link !== "#" ? (
-                        <>
-                          View Certificate
-                          <ExternalLink className="w-4 h-4" />
-                        </>
-                      ) : (
-                        <>
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                          Certificate Link Coming Soon
-                        </>
-                      )}
-                    </a>
-                  </Button>
+                  <div className="absolute left-3 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded-full border border-accent-blue/60 bg-primary md:left-1/2 md:-translate-x-1/2">
+                    <div className="h-2.5 w-2.5 rounded-full bg-accent-blue" />
+                  </div>
                 </div>
-              </Card>
-            </motion.article>
-          ))}
+              </motion.article>
+            ))}
+          </div>
         </div>
 
-        {/* Add New Certification Placeholder */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.5, delay: 0.5 }}
-          className="mt-12 lg:mt-16"
+          className="mt-16"
         >
-          <Card variant="glass" className="p-8 lg:p-12 text-center border-dashed border-accent-blue/30">
-            <div className="p-4 rounded-2xl bg-accent-blue/10 w-fit mx-auto mb-5">
-              <Award className="w-8 h-8 text-accent-blue" />
+          <Card variant="glass" className="border-dashed border-accent-blue/30 p-8 lg:p-12">
+            <div className="mb-5 flex w-fit items-center justify-center rounded-2xl bg-accent-blue/10 p-4">
+              <Award className="h-8 w-8 text-accent-blue" />
             </div>
-            <h3 className="text-xl lg:text-2xl font-bold font-display text-text-light mb-3">
-              More Certifications Coming Soon
-            </h3>
-            <p className="text-text-muted mb-6 max-w-md mx-auto">
-              Actively pursuing AWS certifications, cloud credentials, and specialized technical certifications to expand my expertise.
+            <h3 className="text-xl font-bold font-display text-text-light lg:text-2xl">Roadmap Ahead</h3>
+            <p className="mt-3 max-w-2xl text-text-muted">
+              I’m actively strengthening my AWS, Kubernetes, and Terraform fundamentals while continuing to build secure, cloud-first solutions.
             </p>
-            <div className="flex flex-wrap justify-center gap-3">
+            <div className="mt-6 flex flex-wrap gap-3">
               <span className="badge badge-learning">AWS Solutions Architect</span>
-              <span className="badge badge-learning">Docker Certified Associate</span>
-              <span className="badge badge-learning">Kubernetes (CKA)</span>
-              <span className="badge badge-learning">CompTIA Security+</span>
+              <span className="badge badge-learning">Certified Kubernetes Administrator</span>
+              <span className="badge badge-learning">Terraform Associate</span>
             </div>
           </Card>
+        </motion.div>
+
+        <motion.div
+          id="journal"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="mt-20"
+        >
+          <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-sm font-medium uppercase tracking-[0.18em] text-accent-blue">Learning Journal</p>
+              <h3 className="mt-2 text-3xl font-bold font-display text-text-light">My AWS Journey</h3>
+            </div>
+            <Button variant="outline" size="sm" asChild>
+              <a href="https://www.linkedin.com/in/bijay-chand" target="_blank" rel="noopener noreferrer">
+                View All on LinkedIn
+                <ArrowRight className="w-4 h-4" />
+              </a>
+            </Button>
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+            {awsJourneyPosts.map((post, index) => (
+              <motion.a
+                key={post.title}
+                href={post.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-100px" }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                className="group block h-full"
+              >
+                <Card variant="glass" className="h-full p-5 transition-all duration-300 group-hover:border-accent-blue/40 group-hover:shadow-glow-blue">
+                  <span className="mb-4 inline-flex rounded-full bg-accent-blue/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-accent-blue">
+                    {post.tag}
+                  </span>
+                  <h4 className="text-lg font-bold text-text-light">{post.title}</h4>
+                  <p className="mt-3 text-sm leading-relaxed text-text-muted">{post.description}</p>
+                  <div className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-accent-sky">
+                    Read more
+                    <ExternalLink className="h-4 w-4" />
+                  </div>
+                </Card>
+              </motion.a>
+            ))}
+          </div>
         </motion.div>
       </div>
     </section>
@@ -143,13 +148,8 @@ function CertificationStatusBadge({ status }: { status: CertificationItem["statu
   const Icon = config.icon;
 
   return (
-    <span className={cn(
-      "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium",
-      config.bg,
-      config.color,
-      config.border
-    )}>
-      <Icon className="w-3 h-3" />
+    <span className={cn("inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium", config.bg, config.color, config.border)}>
+      <Icon className="h-3 w-3" />
       {status}
     </span>
   );
