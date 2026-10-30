@@ -1,5 +1,5 @@
 
-name: Bijay Chand - EC2 Deployment
+name: Bijay Chand EC2 Deployment
 
 on:
   push:
@@ -17,7 +17,7 @@ jobs:
       - name: Setup SSH key
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/ec2_key
+          printf '%s\n' "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/ec2_key
           chmod 600 ~/.ssh/ec2_key
 
       - name: Add EC2 to known hosts
@@ -31,13 +31,9 @@ jobs:
             -e "ssh -i ~/.ssh/ec2_key" \
             ./ \
             ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:${{ secrets.EC2_TARGET_DIR }}/
-- name: Restart Nginx
-  run: |
-    ssh -i ~/.ssh/ec2_key \
-      ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} \
-      "sudo systemctl restart nginx && sudo systemctl is-active nginx"
 
-- name: Verify website
-  run: |
-    curl -f --retry 5 --retry-delay 5 \
-      http://${{ secrets.EC2_HOST }}/
+      - name: Verify Nginx
+        run: |
+          ssh -i ~/.ssh/ec2_key \
+            ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} \
+            "sudo systemctl is-active nginx"
