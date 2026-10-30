@@ -20,6 +20,14 @@ jobs:
           printf '%s\n' "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/ec2_key
           chmod 600 ~/.ssh/ec2_key
 
+            - name: Validate EC2 host
+        run: |
+          if [ -z "${{ secrets.EC2_HOST }}" ]; then
+            echo "ERROR: EC2_HOST secret is missing"
+            exit 1
+          fi
+
+          echo "EC2_HOST secret is configured"
       - name: Add EC2 to known hosts
         run: |
           ssh-keyscan -H "${{ secrets.EC2_HOST }}" >> ~/.ssh/known_hosts
