@@ -5,14 +5,16 @@ WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
+
+# Install dependencies
+RUN npm ci
+
+# Copy application sources
 COPY tsconfig.json tsconfig.node.json vite.config.ts ./
 COPY tailwind.config.js postcss.config.js ./
 COPY public ./public
 COPY src ./src
 COPY index.html ./
-
-# Install dependencies
-RUN npm ci
 
 # Build the application
 RUN npm run build

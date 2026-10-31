@@ -42,8 +42,8 @@ case $COMMAND in
         docker-compose up -d
         print_info "✓ Containers started!"
         echo -e "\n${GREEN}Application URLs:${NC}"
-        echo "  Frontend: http://localhost:3000"
-        echo "  Backend:  http://localhost:5000"
+        echo "  Frontend: http://localhost:${CLIENT_PORT:-80}"
+        echo "  Backend:  http://localhost:${API_PORT:-5000}"
         echo ""
         print_info "View logs with: docker-compose logs -f"
         ;;

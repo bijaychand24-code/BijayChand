@@ -1,5 +1,4 @@
-
-name: Node.js EC2 Deployment
+name: Deploy to AWS EC2 (Docker)
 
 on:
   push:
@@ -10,38 +9,20 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
 jobs:
   deploy:
-    name: Deploy to AWS EC2
+    name: Build and deploy containers on EC2
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout repository
-      - name: Checkout Code
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      # Step 2: Setup Node.js
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-
-      # Step 3: Install dependencies
-      - name: Install Dependencies
-        run: npm ci
-
-      # Step 4: Build application if build script exists
-      - name: Build Application
-        run: |
-          if npm run | grep -qE '^[[:space:]]+build'; then
-            npm run build
-          else
-            echo "No build script found. Skipping build."
-          fi
-
-      # Step 5: Validate EC2 secrets
-      - name: Validate EC2 Secrets
+      - name: Validate EC2 secrets
         env:
           EC2_HOST: ${{ secrets.EC2_HOST }}
           EC2_USER: ${{ secrets.EC2_USER }}
@@ -49,7 +30,6 @@ jobs:
           EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
         run: |
           set -e
-
           for SECRET in EC2_HOST EC2_USER EC2_TARGET_DIR EC2_SSH_KEY; do
             if [ -z "${!SECRET}" ]; then
               echo "ERROR: $SECRET secret is missing"
@@ -57,79 +37,83 @@ jobs:
             fi
           done
 
-          echo "All required EC2 secrets are configured."
-
-      # Step 6: Setup SSH
       - name: Setup SSH
         env:
           EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
         run: |
           mkdir -p ~/.ssh
           chmod 700 ~/.ssh
-
           printf '%s\n' "$EC2_SSH_KEY" > ~/.ssh/ec2_key
           chmod 600 ~/.ssh/ec2_key
-
           ssh-keygen -y -f ~/.ssh/ec2_key > /dev/null
 
-      # Step 7: Add EC2 to known hosts
-      - name: Add EC2 Known Host
+      - name: Add EC2 host to known_hosts
         env:
           EC2_HOST: ${{ secrets.EC2_HOST }}
         run: |
           ssh-keyscan -H "$EC2_HOST" >> ~/.ssh/known_hosts
           chmod 600 ~/.ssh/known_hosts
 
-      # Step 8: Deploy application
-      - name: Deploy to EC2
+      - name: Sync repository to EC2
         env:
           EC2_HOST: ${{ secrets.EC2_HOST }}
           EC2_USER: ${{ secrets.EC2_USER }}
           EC2_TARGET_DIR: ${{ secrets.EC2_TARGET_DIR }}
         run: |
           set -e
-
-          ssh -i ~/.ssh/ec2_key \
-            "$EC2_USER@$EC2_HOST" \
-            "mkdir -p '$EC2_TARGET_DIR'"
-
+          ssh -i ~/.ssh/ec2_key "$EC2_USER@$EC2_HOST" "mkdir -p '$EC2_TARGET_DIR'"
           rsync -avz --delete \
             --exclude='.git' \
-            --exclude='node_modules' \
-            --exclude='.env' \
             --exclude='.github' \
+            --exclude='node_modules' \
+            --exclude='dist' \
+            --exclude='.env' \
             -e "ssh -i ~/.ssh/ec2_key" \
             ./ "$EC2_USER@$EC2_HOST:$EC2_TARGET_DIR/"
 
-      # Step 9: Install dependencies on EC2
-      - name: Install Dependencies on EC2
+      - name: Build and start containers
         env:
           EC2_HOST: ${{ secrets.EC2_HOST }}
           EC2_USER: ${{ secrets.EC2_USER }}
           EC2_TARGET_DIR: ${{ secrets.EC2_TARGET_DIR }}
         run: |
-          ssh -i ~/.ssh/ec2_key \
-            "$EC2_USER@$EC2_HOST" \
-            "cd '$EC2_TARGET_DIR' && npm ci --omit=dev"
+          set -e
+          ssh -i ~/.ssh/ec2_key "$EC2_USER@$EC2_HOST" bash -s <<EOF
+            set -e
+            cd '$EC2_TARGET_DIR'
 
-      # Step 10: Restart Node.js application
-      - name: Restart Node.js Application
+            if [ ! -f server/.env ]; then
+              cp server/.env.example server/.env
+              echo "WARNING: server/.env was missing; created it from .env.example."
+              echo "Edit it on the server to configure SMTP/MongoDB/CORS."
+            fi
+
+            docker compose up -d --build --remove-orphans
+            docker image prune -f
+          EOF
+
+      - name: Verify deployment
         env:
           EC2_HOST: ${{ secrets.EC2_HOST }}
           EC2_USER: ${{ secrets.EC2_USER }}
           EC2_TARGET_DIR: ${{ secrets.EC2_TARGET_DIR }}
         run: |
-          ssh -i ~/.ssh/ec2_key \
-            "$EC2_USER@$EC2_HOST" \
-            "cd '$EC2_TARGET_DIR' && pm2 restart ecosystem.config.js --update-env || pm2 start ecosystem.config.js"
+          set -e
+          ssh -i ~/.ssh/ec2_key "$EC2_USER@$EC2_HOST" bash -s <<EOF
+            set -e
+            cd '$EC2_TARGET_DIR'
+            docker compose ps
 
-      # Step 11: Verify deployment
-      - name: Verify EC2 Deployment
-        env:
-          EC2_HOST: ${{ secrets.EC2_HOST }}
-        run: |
-          ssh -i ~/.ssh/ec2_key \
-            "${{ secrets.EC2_USER }}@$EC2_HOST" \
-            "pm2 status"
-          
-          echo "Deployment completed successfully!"
+            for i in \$(seq 1 12); do
+              if docker compose exec -T client wget -q -O- http://localhost/api/health | grep -q '"status":"ok"'; then
+                echo "Health check passed."
+                exit 0
+              fi
+              echo "Waiting for app to become healthy (\$i/12)..."
+              sleep 5
+            done
+
+            echo "Health check failed. Recent logs:"
+            docker compose logs --tail=100
+            exit 1
+          EOF

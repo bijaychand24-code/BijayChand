@@ -95,8 +95,8 @@ docker-compose up --build
 ```
 
 Access at:
-- Frontend: http://localhost:3000
-- Backend: http://localhost:5000
+- Frontend: http://localhost
+- Backend: http://localhost:5000 (loopback only)
 
 For more Docker options, see [DOCKER.md](./DOCKER.md) or use the helper script:
 ```bash
@@ -139,10 +139,13 @@ For more Docker options, see [DOCKER.md](./DOCKER.md) or use the helper script:
    ```env
    MONGO_URI=your_mongodb_connection_string
    PORT=5000
-   EMAIL_USER=your_email@gmail.com
-   EMAIL_PASS=your_email_password
+   SMTP_HOST=smtp.gmail.com
+   SMTP_PORT=587
+   SMTP_USER=your_email@gmail.com
+   SMTP_PASS=your_email_password
+   CONTACT_EMAIL=your_email@gmail.com
    NODE_ENV=development
-   CLIENT_URL=http://localhost:5173
+   CORS_ORIGIN=http://localhost:3000
    ```
 
 2. **Client Configuration** (if needed)
@@ -294,9 +297,13 @@ This project includes complete Docker configuration for containerized deployment
 ```
 MONGO_URI=mongodb connection string
 PORT=5000
-EMAIL_USER=your_email_address
-EMAIL_PASS=your_app_password
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your_email_address
+SMTP_PASS=your_app_password
+CONTACT_EMAIL=your_email_address
 NODE_ENV=development|production
+CORS_ORIGIN=https://your-domain.com
 ```
 
 ## 📄 License

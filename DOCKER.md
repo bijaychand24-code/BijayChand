@@ -23,8 +23,8 @@ This project includes Docker configuration for both client and server, making it
    ```
 
    The application will be available at:
-   - Frontend: http://localhost:3000
-   - Backend API: http://localhost:5000
+   - Frontend: http://localhost (set `CLIENT_PORT` to change the host port)
+   - Backend API: http://localhost:5000 (bound to loopback only)
 
 ## Docker Configuration
 
@@ -89,7 +89,7 @@ Configure server environment variables by editing `server/.env`:
 
 - `NODE_ENV`: Set to `production` for production builds
 - `PORT`: Server port (default: 5000)
-- `CLIENT_URL`: Frontend URL for CORS configuration
+- `CORS_ORIGIN`: Frontend URL for CORS configuration
 - `SMTP_*`: Email configuration for contact form
 - `RATE_LIMIT_*`: Rate limiting settings
 
@@ -162,7 +162,7 @@ docker-compose ps
 2. **Images**: Built images are optimized for production with minimal attack surface
 3. **Non-root User**: Application runs as non-root user for better isolation
 4. **Network**: Services communicate over internal Docker network
-5. **CORS**: Configure `CLIENT_URL` to restrict API access
+5. **CORS**: Configure `CORS_ORIGIN` to restrict API access
 
 ## Cleanup
 
@@ -182,3 +182,109 @@ docker rmi portfolio-api portfolio-client
 - Update Nginx configuration if needed (see `client/nginx.conf`)
 - Add CI/CD pipeline for automated builds and deployments
 - Consider using Docker registry (Docker Hub, ECR, etc.) for image storage
+
+## Deploying to AWS EC2 (Ubuntu)
+
+The containers are self-contained: the client image serves the built React app with
+Nginx and proxies `/api/*` to the `server` container over the private Docker network.
+
+### 1. Prepare the EC2 instance
+
+Launch an Ubuntu 22.04/24.04 instance and allow inbound ports **22**, **80** and
+**443** in its security group (port 5000 does **not** need to be public).
+
+Install Docker Engine and the Compose plugin:
+
+```bash
+sudo apt update
+sudo apt install -y ca-certificates curl gnupg
+sudo install -m 0755 -d /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+sudo chmod a+r /etc/apt/keyrings/docker.gpg
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo $VERSION_CODENAME) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+sudo apt update
+sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+sudo usermod -aG docker "$USER"
+newgrp docker
+```
+
+### 2. Deploy the application
+
+```bash
+git clone <repository-url> ~/portfolio
+cd ~/portfolio
+
+# Create the backend environment file (never commit this file)
+cp server/.env.example server/.env
+nano server/.env
+
+docker compose up -d --build
+docker compose ps
+curl http://localhost/api/health
+```
+
+The site is now reachable at `http://<ec2-public-ip>/`. Point your domain's DNS
+`A` record (for `bijaychand.me` and `www`) at the instance's Elastic IP.
+
+### 3. Enable HTTPS (recommended)
+
+Terminate TLS on the host with Nginx + Certbot, and keep the app container bound
+to a private port:
+
+```bash
+# On the EC2 host
+echo 'CLIENT_PORT=8080' >> .env
+docker compose up -d
+
+sudo apt install -y nginx certbot python3-certbot-nginx
+sudo tee /etc/nginx/sites-available/portfolio > /dev/null <<'NGINX'
+server {
+    listen 80;
+    server_name bijaychand.me www.bijaychand.me;
+
+    location / {
+        proxy_pass http://127.0.0.1:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+NGINX
+sudo ln -sf /etc/nginx/sites-available/portfolio /etc/nginx/sites-enabled/portfolio
+sudo rm -f /etc/nginx/sites-enabled/default
+sudo nginx -t && sudo systemctl reload nginx
+
+sudo certbot --nginx -d bijaychand.me -d www.bijaychand.me
+```
+
+Alternatively use an AWS Application Load Balancer with an ACM certificate and
+keep the container on port 80.
+
+### 4. Automated deployment with GitHub Actions
+
+`.github/workflows/main.yml` syncs the repository to EC2 and runs
+`docker compose up -d --build` on every push to `main`.
+
+Add these repository secrets (Settings → Secrets and variables → Actions):
+
+| Secret | Example |
+| --- | --- |
+| `EC2_HOST` | `ec2-1-2-3-4.compute-1.amazonaws.com` or public IP |
+| `EC2_USER` | `ubuntu` |
+| `EC2_TARGET_DIR` | `/home/ubuntu/portfolio` |
+| `EC2_SSH_KEY` | private key whose public key is in `~/.ssh/authorized_keys` |
+
+`server/.env` is excluded from the sync, so production secrets stay on the server.
+On the very first deploy the workflow copies `server/.env.example` if `.env` is
+missing — edit it on the server afterwards.
+
+### 5. Operations
+
+```bash
+docker compose ps
+docker compose logs -f
+docker compose up -d --build      # redeploy after code changes
+docker compose down               # stop
+docker system prune -f            # reclaim disk space
+```
