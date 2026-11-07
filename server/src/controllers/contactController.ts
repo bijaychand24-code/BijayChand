@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
 import { z } from 'zod';
-import mongoose from 'mongoose';
-import { Contact } from '../models/Contact.js';
+import { createContact } from '../models/Contact.js';
 import { sendContactEmail } from '../utils/mailer.js';
 
 const contactValidationSchema = z.object({
@@ -27,12 +26,10 @@ export const handleContactSubmit = async (req: Request, res: Response): Promise<
     const { name, email, subject, message } = parseResult.data;
 
     // Save to database if connected
-    if (mongoose.connection.readyState === 1) {
-      try {
-        await Contact.create({ name, email, subject, message });
-      } catch (dbErr) {
-        console.error('Failed to persist contact submission in DB:', dbErr);
-      }
+    try {
+      await createContact({ name, email, subject, message });
+    } catch (dbErr) {
+      console.error('Failed to persist contact submission in DB:', dbErr);
     }
 
     // Attempt to send email

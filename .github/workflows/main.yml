@@ -159,7 +159,7 @@ jobs:
             if [ ! -f server/.env ]; then
               cp server/.env.example server/.env
               echo "WARNING: server/.env was missing; created it from .env.example."
-              echo "Edit it on the server to configure SMTP/MongoDB/CORS."
+              echo "Edit it on the server to configure SMTP/PostgreSQL/CORS."
             fi
 
             echo '$GHCR_TOKEN' | docker login ghcr.io -u '$GHCR_USER' --password-stdin

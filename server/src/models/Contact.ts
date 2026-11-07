@@ -1,19 +1,31 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import { getPool } from '../config/db.js';
 
-export interface IContact extends Document {
+export interface ContactInput {
   name: string;
   email: string;
   subject: string;
   message: string;
+}
+
+export interface ContactRecord extends ContactInput {
+  id: number;
   createdAt: Date;
 }
 
-const ContactSchema: Schema = new Schema({
-  name: { type: String, required: true, trim: true },
-  email: { type: String, required: true, trim: true, lowercase: true },
-  subject: { type: String, required: true, trim: true },
-  message: { type: String, required: true, trim: true },
-  createdAt: { type: Date, default: Date.now }
-});
+export const isDbReady = (): boolean => getPool() !== null;
 
-export const Contact = mongoose.model<IContact>('Contact', ContactSchema);
+export const createContact = async (input: ContactInput): Promise<ContactRecord | null> => {
+  const pool = getPool();
+  if (!pool) {
+    return null;
+  }
+
+  const { rows } = await pool.query<ContactRecord>(
+    `INSERT INTO contacts (name, email, subject, message)
+     VALUES ($1, $2, $3, $4)
+     RETURNING id, name, email, subject, message, created_at AS "createdAt"`,
+    [input.name, input.email, input.subject, input.message]
+  );
+
+  return rows[0] ?? null;
+};
