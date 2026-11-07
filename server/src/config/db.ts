@@ -5,17 +5,25 @@ let pool: Pool | null = null;
 export const getPool = (): Pool | null => pool;
 
 export const connectDB = async (): Promise<void> => {
-  const connectionString = process.env.DATABASE_URL;
+  let connectionString = process.env.DATABASE_URL;
 
   if (!connectionString) {
     console.warn('⚠️ DATABASE_URL is not defined in environment variables. Running server without PostgreSQL connection.');
     return;
   }
 
+  const useSsl = process.env.DATABASE_SSL === 'true';
+
+  if (useSsl) {
+    const url = new URL(connectionString);
+    url.searchParams.delete('sslmode');
+    connectionString = url.toString();
+  }
+
   try {
     const newPool = new Pool({
       connectionString,
-      ssl: process.env.DATABASE_SSL === 'true' ? { rejectUnauthorized: false } : undefined,
+      ssl: useSsl ? { rejectUnauthorized: false } : undefined,
       max: 10,
       idleTimeoutMillis: 30000,
       connectionTimeoutMillis: 5000,
